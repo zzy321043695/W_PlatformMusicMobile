@@ -32,8 +32,8 @@ class _LyricState extends State<LyricRoll> {
   Timer timer;
   @override
   void initState() {
-    LogUtils.e("歌词组件");
-    //print(widget.lyric);
+    //LogUtils.e("歌词组件");
+    ////print(widget.lyric);
     super.initState();
     ly = lyricLocate(widget.lyric);
     timer = Timer.periodic(const Duration(milliseconds: 100), (_) {
@@ -83,7 +83,7 @@ class _LyricState extends State<LyricRoll> {
             lyricDisplay[2] = l[0].lyric;
             break;
           } else if (l[i].startTime > MusicController.position && i != 0) {
-            LogUtils.e("歌词定位错误");
+            //LogUtils.e("歌词定位错误");
             break;
           }
         }

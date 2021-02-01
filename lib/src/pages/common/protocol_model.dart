@@ -112,7 +112,7 @@ class ProtocolModel {
 
 //用户协议
   void openUserProtocol(BuildContext context) {
-    LogUtils.e("查看用户协议");
+    //LogUtils.e("查看用户协议");
     NavigatorUtils.pushPage(
       context: context,
       targPage: CommonWebViewPage(
@@ -124,7 +124,7 @@ class ProtocolModel {
 
 //隐私协议
   void openPrivateProtocol(BuildContext context) {
-    LogUtils.e("查看隐私协议");
+    //LogUtils.e("查看隐私协议");
     NavigatorUtils.pushPage(
       context: context,
       targPage: CommonWebViewPage(

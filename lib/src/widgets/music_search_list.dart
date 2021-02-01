@@ -30,7 +30,7 @@ class _MusicListState extends State<MusicListWidget> {
       return Container();
     else {
       List<dynamic> musicInfoList = widget.musicList['list'];
-      print(musicInfoList);
+      //print(musicInfoList);
       return Scaffold(
         body: new ListView.builder(
           itemCount: musicInfoList.length,

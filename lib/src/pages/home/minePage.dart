@@ -67,7 +67,7 @@ class _MinePageState extends State<MinePage> {
               onTap: () {
                 /* MusicInfo m = MusicInfo(songMid: 'sM');
                 LocalCacheLoader('sm').saveById("uuid", {'1': m});
-                print(LocalCacheLoader('sm').all.map<MusicInfo>(
+                //print(LocalCacheLoader('sm').all.map<MusicInfo>(
                       (cache) => cache.value['uuid'].songMid,
                     )); */
 
@@ -79,7 +79,7 @@ class _MinePageState extends State<MinePage> {
                 /* LocalCacheLoader('aa')
                     .saveById("uuid", {'1': "ss", '2': "ddd"}); */
                 // LocalCacheLoader('aa').clearAll();
-                /* print(LocalCacheLoader('aa')
+                /* //print(LocalCacheLoader('aa')
                     .all
                     .map(
                       (cache) => cache.value['3'],

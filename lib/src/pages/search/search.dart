@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-30 16:37:22
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-01 22:16:29
+ * @LastEditTime: 2021-01-31 21:31:02
  */
 import 'package:flutter/material.dart';
 import 'package:music_learn/src/http/net.dart';
@@ -59,7 +59,7 @@ class _SearchPageState extends State<SearchPage>
     super.dispose();
   }
 
-  var val;
+  var val = 1;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -96,10 +96,10 @@ class _SearchPageState extends State<SearchPage>
           title: TextField(
             controller: _textController,
             onSubmitted: (value) {
-              LogUtils.e("搜索结果");
-              print('$value');
+              //LogUtils.e("搜索结果");
+              //print('$value');
               Net.qqSearch(key: value).then((v) {
-                print(v);
+                //print(v);
                 setState(() {
                   _searchList = v.data['data']['song'];
                 });

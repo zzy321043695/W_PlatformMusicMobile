@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 10:34:18
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-21 10:13:17
+ * @LastEditTime: 2021-01-27 20:58:27
  */
 
 import 'package:flutter/material.dart';
@@ -45,13 +45,13 @@ class _MainPageState extends State<StatefulWidget>
   @override
   void dispose() async {
     _tabController.dispose();
-    LogUtils.e("mainPage release");
+    //LogUtils.e("mainPage release");
 
     int result = await MusicController.audioPlayer.release();
     if (result == 1) {
-      LogUtils.e('release success');
+      //LogUtils.e('release success');
     } else {
-      LogUtils.e('release failed');
+      //LogUtils.e('release failed');
     }
     MusicController.audioPlayer.dispose();
     super.dispose();
@@ -72,7 +72,7 @@ class _MainPageState extends State<StatefulWidget>
                 Icons.menu,
                 color: Colors.black,
               ),
-              onPressed: () => debugPrint('Menu'),
+              onPressed: () {},
             ),
             actions: [
               IconButton(

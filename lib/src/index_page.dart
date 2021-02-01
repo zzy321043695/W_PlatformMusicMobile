@@ -50,7 +50,7 @@ class _IndexPageState extends State with ProtocolModel {
   void dispose() {
     // TODO: implement dispose
     super.dispose();
-    LogUtils.e('结束');
+    //LogUtils.e('结束');
   }
 
   @override
@@ -67,7 +67,7 @@ class _IndexPageState extends State with ProtocolModel {
     //当app运行在release环境时
     bool isLog = !bool.fromEnvironment("dart.vm.product");
     LogUtils.init(islog: isLog);
-    LogUtils.e("权限申请");
+    //LogUtils.e("权限申请");
     //权限申请
     NavigatorUtils.pushPageByFade(
       context: context,
@@ -82,7 +82,7 @@ class _IndexPageState extends State with ProtocolModel {
       ),
       //权限申请的结果
       dismissCallBack: (value) {
-        LogUtils.e("权限申请结果 $value");
+        //LogUtils.e("权限申请结果 $value");
 
         initDataNext();
       },
@@ -93,14 +93,14 @@ class _IndexPageState extends State with ProtocolModel {
   void initDataNext() async {
     if (Platform.isIOS) {
       Directory libDire = await getLibraryDirectory();
-      LogUtils.e("libDire ${libDire.path}");
+      //LogUtils.e("libDire ${libDire.path}");
     }
     //初始化
     await SPUtil.init();
     //读取一下标识
     bool isAgrement = await SPUtil.getBool("isAgrement");
 
-    LogUtils.e("isAgrement $isAgrement");
+    //LogUtils.e("isAgrement $isAgrement");
 
     if (isAgrement == null || !isAgrement) {
       isAgrement = await showProtocolFunction(context);
@@ -108,14 +108,14 @@ class _IndexPageState extends State with ProtocolModel {
 
     if (isAgrement) {
       //同意
-      LogUtils.e("同意协议");
+      //LogUtils.e("同意协议");
 
       //保存一下标识
       SPUtil.save("isAgrement", true);
 
       next();
     } else {
-      LogUtils.e("不同意");
+      //LogUtils.e("不同意");
       closeApp();
     }
   }

@@ -3,10 +3,12 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-24 15:49:09
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-23 17:16:07
+ * @LastEditTime: 2021-01-31 21:17:54
  */
 import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
 import 'package:music_learn/src/http/net.dart';
 import 'package:music_learn/src/pages/config/music_controller.dart';
@@ -27,6 +29,8 @@ class MusicInfo {
   String songMid = "";
   String singerName = "";
   String albumMid = "";
+  String picUrl = "";
+  String hash = '';
   List<Lyric> lyric = <Lyric>[];
   String source = "qq";
   List<int> coverMainColor;
@@ -38,52 +42,96 @@ class MusicInfo {
       this.lyric,
       this.singerName,
       this.songMid,
+      this.picUrl,
+      this.hash,
       this.songName,
       this.source,
       this.url});
 
   Future getColor() async {
-    String u = 'https://y.gtimg.cn/music/photo_new/T002R300x300M000' +
-        this.albumMid +
-        '.jpg';
-    LogUtils.e("photoUrl");
-    LogUtils.e(u);
-
-    await getColorFromUrl(u).then((value) {
+    await getColorFromUrl(this.picUrl).then((value) {
       this.coverMainColor = value;
-      LogUtils.e("color");
-      print(coverMainColor);
+      //LogUtils.e("color");
+      //print(coverMainColor);
     }).catchError((e) {
-      LogUtils.e("错误");
-      print(e);
+      //LogUtils.e("错误");
+      //print(e);
     });
   }
 
   Future getLyric() async {
-    await Net.qqLyric(this.songMid).then((v) {
-      String lyricStr = v.data['lyric'];
-      // LogUtils.e("歌词");
-      // LogUtils.e(lyricStr);
-      this.lyric = formatLyric(lyricStr);
-      // LogUtils.e("LyricMap");
-      /* for (int i = 0; i < lyric.length - 1; i++) {
-        LogUtils.e(lyric[i].lyric);
-      } */
-    });
+    if (this.source != 'kuwo') {
+      await Net.getLyric(this.source, this.songMid).then((v) {
+        this.lyric = formatLyric(v);
+        //LogUtils.e("歌词转换");
+        //print(this.lyric);
+      });
+    } else {
+      await Net.kuwoLyric(this.songMid).then((v) {
+        List<Lyric> lyricList = [];
+        int nextStartTime = 0;
+        for (int i = 0; i < v.length; i++) {
+          if (i == 0) {
+            String startTime = v[i]['time'];
+            double startTimeDouble = double.parse(startTime);
+            int startMillisecondsInt = (startTimeDouble * 1000).round();
+
+            String endTime = v[i + 1]['time'];
+            double endTimeDouble = double.parse(endTime);
+            int endMillisecondsInt = (endTimeDouble * 1000).round();
+            Lyric lyricItem = Lyric(
+              v[i]['lineLyric'],
+              startTime: Duration(milliseconds: startMillisecondsInt),
+              endTime: Duration(milliseconds: endMillisecondsInt),
+            );
+            lyricList.add(lyricItem);
+            nextStartTime = endMillisecondsInt;
+          } else if (i < v.length - 1) {
+            String endTime = v[i + 1]['time'];
+            double endTimeDouble = double.parse(endTime);
+            int endMillisecondsInt = (endTimeDouble * 1000).round();
+            Lyric lyricItem = Lyric(
+              v[i]['lineLyric'],
+              startTime: Duration(milliseconds: nextStartTime),
+              endTime: Duration(milliseconds: endMillisecondsInt),
+            );
+            lyricList.add(lyricItem);
+            nextStartTime = endMillisecondsInt;
+          } else {
+            int endMillisecondsInt = nextStartTime + 10000;
+            Lyric lyricItem = Lyric(
+              v[i]['lineLyric'],
+              startTime: Duration(milliseconds: nextStartTime),
+              endTime: Duration(milliseconds: endMillisecondsInt),
+            );
+            lyricList.add(lyricItem);
+            nextStartTime = endMillisecondsInt;
+          }
+        }
+        this.lyric = lyricList;
+      });
+      //LogUtils.e("酷我歌词转换");
+      //print(this.lyric);
+    }
   }
 
   Future getUrl() async {
-    await Net.qqSongUrl(this.songMid, "320").then((v) {
-      this.url = v.data['data']['url'][this.songMid];
-    });
+    if (this.source != 'kugou') {
+      await Net.getSongUrl(this.source, this.songMid, "flac").then((v) {
+        this.url = v;
+      });
+    }
   }
 
-  Future getCoverMainColor(String url) async {
-    LogUtils.e("color");
-    List<int> color = await getColorFromUrl(url);
-    LogUtils.e("color");
-    print(color);
-    return color;
+  Future kugouGetSongurlAndLyricAndPicurl() async {
+    if (this.source == 'kugou') {
+      await Net.kugouSongurlAndLyricAndPicurl(this.songMid, this.hash)
+          .then((v) {
+        this.url = v['songUrl'];
+        this.lyric = formatLyric(v['lyric']);
+        this.picUrl = v['picUrl'];
+      });
+    }
   }
 
   List<Lyric> formatLyric(String lyricStr1) {
@@ -147,15 +195,30 @@ class FavoriteMusicState {
           (cache) => cache.value['1'],
         )
         .toList();
-    LogUtils.e("收藏长度");
-    print(songNameList.length);
+    var sourceList = LocalCacheLoader('source')
+        .all
+        .map(
+          (cache) => cache.value['1'],
+        )
+        .toList();
+    var picUrlList = LocalCacheLoader('picUrl')
+        .all
+        .map(
+          (cache) => cache.value['1'],
+        )
+        .toList();
+    //LogUtils.e("收藏长度");
+    //print(songNameList.length);
     List<MusicInfo> result = [];
     for (int i = 0; i < songNameList.length; i++) {
       MusicInfo m = MusicInfo(
-          songName: songNameList[i],
-          songMid: songMidList[i],
-          singerName: singerNameList[i],
-          albumMid: albumMidList[i]);
+        songName: songNameList[i],
+        songMid: songMidList[i],
+        singerName: singerNameList[i],
+        albumMid: albumMidList[i],
+        picUrl: picUrlList[i],
+        source: sourceList[i],
+      );
       result.add(m);
     }
     return result;
@@ -178,6 +241,12 @@ class FavoriteMusicState {
       });
       LocalCacheLoader('albumMidList').saveById(i.toString(), {
         '1': musicList[i].albumMid,
+      });
+      LocalCacheLoader('source').saveById(i.toString(), {
+        '1': musicList[i].source,
+      });
+      LocalCacheLoader('picUrl').saveById(i.toString(), {
+        '1': musicList[i].picUrl,
       });
     }
   }
@@ -246,15 +315,23 @@ MusicState musicStateInit() {
       songName: "四季予你",
       source: "qq",
       albumMid: "00431aJU0XFrgv",
+      picUrl:
+          'https://y.gtimg.cn/music/photo_new/T002R300x300M00000431aJU0XFrgv.jpg',
       url:
           "https://isure.stream.qqmusic.qq.com/F000004bd0Av3rVEE3.flac?guid=658650575&vkey=345A5870B35FD4E06477AB22AC17AB47E200600A85C39B0DA4EC289588641C984506CB91A5D3721B1B1792BEEF4C8FAED25D37A85782E817&uin=1899&fromtag=66");
+
+  musicInfo.coverMainColor = [30, 98, 141];
+  musicInfo.getColor();
+  musicInfo.getLyric();
+  musicInfo.getUrl();
+
   List<MusicInfo> musicList = List<MusicInfo>();
   musicList.add(musicInfo);
   return MusicState(musicInfo, musicList, 0, "stop");
 }
 
 ThunkAction handler(action) {
-  LogUtils.e("中间件");
+  //LogUtils.e("中间件");
   return (Store store) async {
     if (action['type'] == MusicActions.pause) {
       await MusicController.audioPlayer.pause();
@@ -265,17 +342,29 @@ ThunkAction handler(action) {
         await store.state.musicInfo.getColor();
         await store.state.musicInfo.getLyric();
         await store.state.musicInfo.getUrl();
+        if (store.state.musicInfo.url == '' ||
+            store.state.musicInfo.url == null) {
+          Fluttertoast.showToast(
+              msg: "无该歌曲资源",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black45,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          return;
+        }
         await MusicController.audioPlayer
             .play(store.state.musicInfo.url)
             .then((value) {
           if (value == 1) {
             // success
             MusicController.status = "playing";
-            LogUtils.e('播放成功');
+            //LogUtils.e('播放成功');
             store.state.state = "playing";
           } else {
             MusicController.status = "pause";
-            LogUtils.e('播放失败');
+            //LogUtils.e('播放失败');
             store.state.state = "pause";
           }
         });
@@ -285,48 +374,129 @@ ThunkAction handler(action) {
           if (value == 1) {
             // success
             MusicController.status = "playing";
-            LogUtils.e('播放成功');
+            //LogUtils.e('播放成功');
             store.state.state = "playing";
           } else {
             MusicController.status = "pause";
-            LogUtils.e('播放失败');
+            //LogUtils.e('播放失败');
             store.state.state = "pause";
           }
         });
       }
       store.dispatch(action);
     } else if (action['type'] == MusicActions.newMusic) {
-      await action['musicInfo'].getColor();
-      await action['musicInfo'].getLyric();
-      await action['musicInfo'].getUrl();
-      LogUtils.e("开始播放");
-      LogUtils.e(action['musicInfo'].url);
-      print(action['musicInfo'].lyric);
-      await MusicController.audioPlayer
-          .play(action['musicInfo'].url)
-          .then((value) {
-        if (value == 1) {
-          // success
-          MusicController.status = "playing";
-          LogUtils.e('play success');
-          store.state.state = "playing";
-        } else {
-          MusicController.status = "pause";
-          LogUtils.e('play failed');
-          store.state.state = "pause";
+      LogUtils.e('音乐源');
+      MusicInfo m = action['musicInfo'];
+      LogUtils.e(m.source);
+      LogUtils.e(m.picUrl);
+      LogUtils.e(m.songMid);
+      print(action['musicInfo']);
+      if (action['musicInfo'].source != 'kugou') {
+        await action['musicInfo'].getColor();
+        await action['musicInfo'].getLyric();
+        await action['musicInfo'].getUrl();
+        //LogUtils.e("开始播放");
+        //LogUtils.e(action['musicInfo'].url);
+        //print(action['musicInfo'].lyric);
+        if (action['musicInfo'].url == '' || action['musicInfo'].url == null) {
+          Fluttertoast.showToast(
+              msg: "无该歌曲资源",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black45,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          return;
         }
-      });
-      LogUtils.e("新歌");
-      LogUtils.e(action['musicInfo'].songMid);
+        LogUtils.e(action['musicInfo'].url);
+        await MusicController.audioPlayer
+            .play(action['musicInfo'].url)
+            .then((value) {
+          if (value == 1) {
+            // success
+            MusicController.status = "playing";
+            //LogUtils.e('play success');
+            store.state.state = "playing";
+          } else {
+            MusicController.status = "pause";
+            //LogUtils.e('play failed');
+            store.state.state = "pause";
+          }
+        });
+      } else {
+        await action['musicInfo'].kugouGetSongurlAndLyricAndPicurl();
+        await action['musicInfo'].getColor();
+        //LogUtils.e("开始播放");
+        //LogUtils.e(action['musicInfo'].url);
+        //print(action['musicInfo'].lyric);
+        if (action['musicInfo'].url == '' || action['musicInfo'].url == null) {
+          Fluttertoast.showToast(
+              msg: "无该歌曲资源",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black45,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          return;
+        }
+        await MusicController.audioPlayer
+            .play(action['musicInfo'].url)
+            .then((value) {
+          if (value == 1) {
+            // success
+            MusicController.status = "playing";
+            //LogUtils.e('play success');
+            store.state.state = "playing";
+          } else {
+            MusicController.status = "pause";
+            //LogUtils.e('play failed');
+            store.state.state = "pause";
+          }
+        });
+      }
+
+      //LogUtils.e("新歌");
+      //LogUtils.e(action['musicInfo'].songMid);
       store.dispatch(action);
     } else if (action['type'] == MusicActions.pre) {
       if (store.state.currentMusicIndex > 0) {
         MusicInfo music =
             store.state.musicList[store.state.currentMusicIndex - 1];
-        await music.getColor();
-        await music.getLyric();
-        await music.getUrl();
-        await MusicController.audioPlayer.play(music.url);
+        if (music.source != 'kugou') {
+          await music.getColor();
+          await music.getLyric();
+          await music.getUrl();
+          if (music.url == '' || music.url == null) {
+            Fluttertoast.showToast(
+                msg: "无该歌曲资源",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            return;
+          }
+          await MusicController.audioPlayer.play(music.url);
+        } else {
+          await music.kugouGetSongurlAndLyricAndPicurl();
+          await music.getColor();
+          if (music.url == '' || music.url == null) {
+            Fluttertoast.showToast(
+                msg: "无该歌曲资源",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            return;
+          }
+          await MusicController.audioPlayer.play(music.url);
+        }
+
         store.state.musicInfo = music;
         store.state.currentMusicIndex--;
         store.state.state = "playing";
@@ -338,32 +508,103 @@ ThunkAction handler(action) {
       }
     } else if (action['type'] == MusicActions.next) {
       // if(action['type'] == MusicActions.next)
-      LogUtils.e("下一首");
+      //LogUtils.e("下一首");
       if (store.state.currentMusicIndex < store.state.musicList.length - 1) {
-        print(store.state.currentMusicIndex);
-        print(store.state.musicList.length);
+        //print(store.state.currentMusicIndex);
+        //print(store.state.musicList.length);
 
         MusicInfo music =
             store.state.musicList[store.state.currentMusicIndex + 1];
-        await music.getColor();
-        await music.getLyric();
-        await music.getUrl();
-        await MusicController.audioPlayer.play(music.url);
+        if (music.source != 'kugou') {
+          await music.getUrl();
+          await music.getLyric();
+          await music.getColor();
+
+          if (music.url == '' || music.url == null) {
+            Fluttertoast.showToast(
+                msg: "无该歌曲资源",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            return;
+          }
+          await MusicController.audioPlayer.play(music.url);
+        } else {
+          await music.kugouGetSongurlAndLyricAndPicurl();
+          await music.getColor();
+
+          if (music.url == '' || music.url == null) {
+            Fluttertoast.showToast(
+                msg: "无该歌曲资源",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            return;
+          }
+          await MusicController.audioPlayer.play(music.url);
+        }
+
         store.state.musicInfo = music;
         store.state.currentMusicIndex++;
         store.state.state = "playing";
         store.dispatch(action);
       } else {
-        await MusicController.audioPlayer.resume();
-        action['state'] = "playing";
+        MusicInfo music = store.state.musicList[0];
+        if (music.source != 'kugou') {
+          await music.getUrl();
+          await music.getLyric();
+          await music.getColor();
+
+          if (music.url == '' || music.url == null) {
+            Fluttertoast.showToast(
+                msg: "无该歌曲资源",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            return;
+          }
+          await MusicController.audioPlayer.play(music.url);
+        } else {
+          await music.kugouGetSongurlAndLyricAndPicurl();
+          await music.getColor();
+
+          if (music.url == '' || music.url == null) {
+            Fluttertoast.showToast(
+                msg: "无该歌曲资源",
+                toastLength: Toast.LENGTH_SHORT,
+                gravity: ToastGravity.BOTTOM,
+                timeInSecForIosWeb: 1,
+                backgroundColor: Colors.black45,
+                textColor: Colors.white,
+                fontSize: 16.0);
+            return;
+          }
+          await MusicController.audioPlayer.play(music.url);
+        }
+
+        store.state.musicInfo = music;
+        store.state.currentMusicIndex = 0;
+        store.state.state = "playing";
         store.dispatch(action);
+        /* await MusicController.audioPlayer.resume();
+        action['state'] = "playing";
+        store.dispatch(action); */
       }
     }
   };
 }
 
 MusicState musicStateReducer(MusicState musicState, action) {
-  LogUtils.e("reducerFunc");
+  //LogUtils.e("reducerFunc");
   if (action['type'] == MusicActions.pause) {
     return MusicState(musicState.musicInfo, musicState.musicList,
         musicState.currentMusicIndex, "pause");

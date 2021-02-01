@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-23 10:52:20
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-25 10:37:52
+ * @LastEditTime: 2021-01-31 02:49:58
  */
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -39,7 +39,7 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   albumPic(
-                      state.musicInfo.coverMainColor, state.musicInfo.albumMid),
+                      state.musicInfo.coverMainColor, state.musicInfo.picUrl),
                   Expanded(
                     child: LyricRoll(state.musicInfo.lyric, state.state),
                     // child: Container(),
@@ -107,8 +107,8 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
   }
 
   Widget backGround(List<int> color) {
-    LogUtils.e("color");
-    print(color);
+    //LogUtils.e("color");
+    //print(color);
     return Container(
       width: MediaQuery.of(context).size.width,
       height: MediaQuery.of(context).size.height,
@@ -130,7 +130,7 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
     );
   }
 
-  Widget albumPic(List<int> color, String albumMid) {
+  Widget albumPic(List<int> color, String picUrl) {
     return Container(
       width: MediaQuery.of(context).size.width * 0.6,
       height: MediaQuery.of(context).size.width * 0.6,
@@ -144,16 +144,17 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
             spreadRadius: 5,
             offset: Offset(0, 0))
       ]),
-      child: ClipRRect(
-        borderRadius: BorderRadius.circular(15),
-        child: CachedNetworkImage(
-          imageUrl: 'https://y.gtimg.cn/music/photo_new/T002R300x300M000' +
-              albumMid +
-              '.jpg',
-          placeholder: (context, url) => Container(
-            width: MediaQuery.of(context).size.width,
-            height: MediaQuery.of(context).size.width,
-            color: Colors.grey,
+      child: Hero(
+        tag: 'songImage',
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(15),
+          child: CachedNetworkImage(
+            imageUrl: picUrl,
+            placeholder: (context, url) => Container(
+              width: MediaQuery.of(context).size.width,
+              height: MediaQuery.of(context).size.width,
+              color: Colors.grey,
+            ),
           ),
         ),
       ),

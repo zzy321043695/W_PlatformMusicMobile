@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2021-01-22 12:01:08
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-25 09:53:54
+ * @LastEditTime: 2021-01-29 19:53:42
  */
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -60,15 +60,18 @@ class _FavoriteListPageState extends State<FavoriteListPage> {
                   //将当前歌曲列表添加到播放列表
                   // List<MusicInfo> musicList = List<MusicInfo>();
 
-                  LogUtils.e("列表");
+                  //LogUtils.e("列表");
                   musicAction['type'] = MusicActions.newMusic;
-                  MusicInfo musicInfo = new MusicInfo(
+                  MusicInfo musicInfo = FavoriteMusicState.favoriteList[index];
+                  /* new MusicInfo(
                     songName: FavoriteMusicState.favoriteList[index].songName,
                     songMid: songMid,
                     singerName:
                         FavoriteMusicState.favoriteList[index].singerName,
                     albumMid: FavoriteMusicState.favoriteList[index].albumMid,
-                  );
+                    source: FavoriteMusicState.favoriteList[index].source,
+                    picUrl: FavoriteMusicState.favoriteList[index].picUrl,
+                  ); */
                   musicAction['musicInfo'] = musicInfo;
                   musicAction['currentMusicIndex'] = index;
                   musicAction['musicList'] = FavoriteMusicState.favoriteList;

@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-23 10:51:18
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-23 18:21:57
+ * @LastEditTime: 2021-01-31 20:21:58
  */
 
 import 'dart:convert';
@@ -17,6 +17,13 @@ import 'package:music_learn/src/pages/music/custom_bottom_navigation_bar_notkey.
 import 'package:music_learn/src/utils/log_utils.dart';
 
 class MusicListPage extends StatefulWidget {
+  final String source;
+  final List musicList;
+  final String topName;
+  MusicListPage(
+      {@required this.source,
+      @required this.musicList,
+      @required this.topName});
   @override
   _MusicListPageState createState() {
     return _MusicListPageState();
@@ -24,114 +31,91 @@ class MusicListPage extends StatefulWidget {
 }
 
 class _MusicListPageState extends State<MusicListPage> {
-  List<dynamic> musicList;
-  List<dynamic> musicInfoList;
+  /* List<dynamic> musicList;
+  List<dynamic> musicInfoList; */
   Map musicAction = {};
 
   @override
   Widget build(BuildContext context) {
+    //LogUtils.e(widget.source);
     return Scaffold(
-      body: FutureBuilder(
-        future: Net.getHttp(),
-        builder: (BuildContext context, AsyncSnapshot snapshot) {
-          // 请求已结束
-          if (snapshot.connectionState == ConnectionState.done) {
-            if (snapshot.hasError) {
-              // 请求失败，显示错误
-              return Text("Error: ${snapshot.error}");
-            } else {
-              // 请求成功，显示数据
-              Map<String, dynamic> responseData =
-                  json.decode(snapshot.data.toString());
-              LogUtils.e("数据");
-              print(responseData['detail']['data']['data']['song'][5]);
-              musicList = responseData['detail']['data']['data']['song'];
-              musicInfoList = responseData['detail']['data']['songInfoList'];
-              print(musicList);
-              return new CustomScrollView(
-                slivers: <Widget>[
-                  new SliverAppBar(
-                    title: Text("热歌榜"),
-                    flexibleSpace: new FlexibleSpaceBar(
-                      background: Image.network(
-                        'https://y.gtimg.cn/music/photo_new/T002R300x300M000' +
-                            musicList[0]['albumMid'] +
-                            '.jpg',
-                        width: MediaQuery.of(context).size.width,
-                        height: 275.0,
-                      ),
-                    ),
-                    expandedHeight: 275.0,
-                    floating: false, //滑动时是否悬浮
-                    pinned: true,
-                    snap: false,
+      body: CustomScrollView(
+        slivers: <Widget>[
+          new SliverAppBar(
+            title: Text(widget.topName),
+            flexibleSpace: new FlexibleSpaceBar(
+              background: Image.network(
+                widget.musicList[0]['albumPicUrl'],
+                width: MediaQuery.of(context).size.width,
+                height: 275.0,
+              ),
+            ),
+            expandedHeight: 200.0,
+            floating: false, //滑动时是否悬浮
+            pinned: true,
+            snap: false,
+          ),
+          StoreConnector<MusicState, VoidCallback>(converter: (store) {
+            return () => store.dispatch(handler(musicAction));
+          }, builder: (store, callback) {
+            return new SliverFixedExtentList(
+              itemExtent: 50.0,
+              delegate: new SliverChildBuilderDelegate(
+                (context, index) => new ListTile(
+                  title: new Text(widget.musicList[index]['songName']),
+                  subtitle: Text(widget.musicList[index]['singerName']),
+                  dense: true,
+                  leading: CircleAvatar(
+                    backgroundColor: Colors.white10,
+                    child: rankNumStyle(index),
                   ),
-                  StoreConnector<MusicState, VoidCallback>(converter: (store) {
-                    return () => store.dispatch(handler(musicAction));
-                  }, builder: (store, callback) {
-                    return new SliverFixedExtentList(
-                      itemExtent: 50.0,
-                      delegate: new SliverChildBuilderDelegate(
-                        (context, index) => new ListTile(
-                          title: new Text(musicList[index]['title']),
-                          subtitle: Text(musicList[index]['singerName']),
-                          dense: true,
-                          leading: CircleAvatar(
-                            backgroundColor: Colors.white10,
-                            child: rankNumStyle(index),
-                          ),
-                          onTap: () async {
-                            String songMid = musicInfoList[index]['mid'];
+                  onTap: () async {
+                    // String songMid = widget.musicList[index]['songMid'];
 
-                            //将当前歌曲列表添加到播放列表
-                            List<MusicInfo> musicList = List<MusicInfo>();
-                            for (int i = 0; i < musicInfoList.length; i++) {
-                              MusicInfo m = new MusicInfo(
-                                  albumMid: musicInfoList[i]['album']['mid'],
-                                  singerName: musicInfoList[i]['singer'][0]
-                                      ['name'],
-                                  songMid: musicInfoList[i]['mid'],
-                                  songName: musicInfoList[i]['name']);
-                              /* m.albumMid = musicInfoList[i]['album']['mid'];
+                    //将当前歌曲列表添加到播放列表
+                    LogUtils.e('cuwu:' + widget.source);
+                    List<MusicInfo> musicList = List<MusicInfo>();
+                    for (int i = 0; i < widget.musicList.length; i++) {
+                      MusicInfo m = new MusicInfo(
+                        albumMid: widget.musicList[i]['albumMid'],
+                        singerName: widget.musicList[i]['singerName'],
+                        songMid: widget.musicList[i]['songMid'],
+                        songName: widget.musicList[i]['songName'],
+                        picUrl: widget.musicList[i]['albumPicUrl'],
+                        source: widget.source,
+                      );
+                      /* m.albumMid = musicInfoList[i]['album']['mid'];
                                 m.singerName =
                                     musicInfoList[i]['singer'][0]['name'];
                                 m.songMid = musicInfoList[i]['mid'];
                                 m.songName = musicInfoList[i]['name']; */
-                              musicList.add(m);
-                            }
-                            LogUtils.e("列表");
-                            musicAction['type'] = MusicActions.newMusic;
-                            MusicInfo musicInfo = new MusicInfo(
-                              songName: musicInfoList[index]['name'],
-                              songMid: songMid,
-                              singerName: musicInfoList[index]['singer'][0]
-                                  ['name'],
-                              albumMid: musicInfoList[index]['album']['mid'],
-                            );
-                            musicAction['musicInfo'] = musicInfo;
-                            musicAction['currentMusicIndex'] = index;
-                            musicAction['musicList'] = musicList;
-
-                            callback();
-                          },
-                          onLongPress: () {
-                            // do something else
-                          },
-                        ),
-                        childCount: 200,
-                      ),
+                      musicList.add(m);
+                    }
+                    //LogUtils.e("列表");
+                    musicAction['type'] = MusicActions.newMusic;
+                    MusicInfo musicInfo = new MusicInfo(
+                      albumMid: widget.musicList[index]['albumMid'],
+                      singerName: widget.musicList[index]['singerName'],
+                      songMid: widget.musicList[index]['songMid'],
+                      songName: widget.musicList[index]['songName'],
+                      picUrl: widget.musicList[index]['albumPicUrl'],
+                      source: widget.source,
                     );
-                  })
-                ],
-              );
-            }
-          } else {
-            // 请求未结束,显示loading
-            return Center(
-              child: CircularProgressIndicator(),
+                    musicAction['musicInfo'] = musicInfo;
+                    musicAction['currentMusicIndex'] = index;
+                    musicAction['musicList'] = musicList;
+
+                    callback();
+                  },
+                  onLongPress: () {
+                    // do something else
+                  },
+                ),
+                childCount: widget.musicList.length,
+              ),
             );
-          }
-        },
+          })
+        ],
       ),
       bottomNavigationBar: new CustomBottomNavigationBarNotkey(),
     );

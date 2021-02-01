@@ -62,9 +62,9 @@ class _RootAPPState extends State {
   void dispose() async {
     int result = await MusicController.audioPlayer.release();
     if (result == 1) {
-      LogUtils.e('release success');
+      //LogUtils.e('release success');
     } else {
-      LogUtils.e('release failed');
+      //LogUtils.e('release failed');
     }
     MusicController.audioPlayer.dispose();
     super.dispose();
