@@ -8,7 +8,7 @@ This project is a starting point for a Flutter application.
 
 A few resources to get you started if this is your first Flutter project:
 
-- [软件下载地址](https://github.com/zzy321043695/W_PlatformMusicMobile/releases/tag/v1.00)
+- [软件下载地址](https://github.com/zzy321043695/W_PlatformMusicMobile/releases)
 - [Cookbook: Useful Flutter samples](https://flutter.dev/docs/cookbook)
 
 For help getting started with Flutter, view our
