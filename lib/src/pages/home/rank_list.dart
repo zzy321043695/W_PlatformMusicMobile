@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 14:07:57
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-31 21:44:22
+ * @LastEditTime: 2021-02-07 09:39:43
  */
 
 import 'dart:convert';
@@ -102,6 +102,8 @@ class _RankListPageState extends State<RankListPage> {
           }
         },
       ),
+      floatingActionButtonLocation: CustomFloatingActionButtonLocation(
+          FloatingActionButtonLocation.endDocked, 0, -56),
       floatingActionButton: PopupMenuButton<String>(
         // icon: Icon(Icons.add),
         child: currentMusicSource(MusicSource.source),
@@ -270,5 +272,18 @@ class _RankListPageState extends State<RankListPage> {
                       ? Text('酷狗')
                       : Text('网易'),
     );
+  }
+}
+
+class CustomFloatingActionButtonLocation extends FloatingActionButtonLocation {
+  FloatingActionButtonLocation location;
+  double offsetX; // X方向的偏移量
+  double offsetY; // Y方向的偏移量
+  CustomFloatingActionButtonLocation(this.location, this.offsetX, this.offsetY);
+
+  @override
+  Offset getOffset(ScaffoldPrelayoutGeometry scaffoldGeometry) {
+    Offset offset = location.getOffset(scaffoldGeometry);
+    return Offset(offset.dx + offsetX, offset.dy + offsetY);
   }
 }

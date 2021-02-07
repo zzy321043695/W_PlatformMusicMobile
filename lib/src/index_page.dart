@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 09:54:26
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-12 15:14:38
+ * @LastEditTime: 2021-02-05 11:57:41
  */
 import 'dart:io';
 
@@ -12,6 +12,7 @@ import 'package:flutter/services.dart';
 import 'package:music_learn/src/pages/common/permission_request_widget.dart';
 import 'package:music_learn/src/pages/common/protocol_model.dart';
 import 'package:music_learn/src/pages/home/main.dart';
+import 'package:music_learn/src/pages/ui_5/home_page.dart';
 import 'package:music_learn/src/utils/log_utils.dart';
 import 'package:music_learn/src/utils/navigator_utils.dart';
 import 'package:music_learn/src/utils/sp_utils.dart';
@@ -127,7 +128,7 @@ class _IndexPageState extends State with ProtocolModel {
   void next() {
     NavigatorUtils.pushPageByFade(
       context: context,
-      targPage: MainPage(),
+      targPage: HomePage(),
       isReplace: true,
     );
   }

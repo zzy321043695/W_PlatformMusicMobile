@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-31 10:36:50
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-21 09:13:06
+ * @LastEditTime: 2021-02-05 11:06:39
  */
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
@@ -13,8 +13,9 @@ import 'package:music_learn/src/pages/config/music_playing.dart';
 import 'package:music_learn/src/utils/log_utils.dart';
 
 class MusicListWidget extends StatefulWidget {
-  final Map<String, dynamic> musicList;
-  MusicListWidget(this.musicList);
+  final List musicList;
+  final String source;
+  MusicListWidget(this.musicList, this.source);
   @override
   _MusicListState createState() {
     return _MusicListState();
@@ -29,7 +30,7 @@ class _MusicListState extends State<MusicListWidget> {
     if (widget.musicList == null || widget.musicList.isEmpty) //音乐列表为空
       return Container();
     else {
-      List<dynamic> musicInfoList = widget.musicList['list'];
+      List musicInfoList = widget.musicList;
       //print(musicInfoList);
       return Scaffold(
         body: new ListView.builder(
@@ -39,30 +40,37 @@ class _MusicListState extends State<MusicListWidget> {
               return () => store.dispatch(handler(musicAction));
             }, builder: (store, callback) {
               return new ListTile(
-                title: new Text(musicInfoList[index]['songname']),
-                subtitle: Text(musicInfoList[index]['singer'][0]['name']),
+                title: new Text(musicInfoList[index]['songName']),
+                subtitle: Text(musicInfoList[index]['singerName']),
                 dense: true,
                 onTap: () async {
-                  String songMid = musicInfoList[index]['songmid'];
+                  String songMid = musicInfoList[index]['songMid'];
 
                   //将当前歌曲列表添加到播放列表
-                  List<MusicInfo> musicList = List<MusicInfo>();
+                  List<MusicInfo> musicList = <MusicInfo>[];
                   for (int i = 0; i < musicInfoList.length; i++) {
                     MusicInfo m = new MusicInfo(
-                        albumMid: musicInfoList[i]['albummid'],
-                        singerName: musicInfoList[i]['singer'][0]['name'],
-                        songMid: musicInfoList[i]['songmid'],
-                        songName: musicInfoList[i]['songname']);
+                      albumMid: musicInfoList[i]['albumMid'],
+                      singerName: musicInfoList[i]['singerName'],
+                      songMid: musicInfoList[i]['songMid'],
+                      songName: musicInfoList[i]['songName'],
+                      picUrl: musicInfoList[i]['albumPicUrl'],
+                      hash: widget.musicList[i]['hash'],
+                      source: widget.source,
+                    );
 
                     musicList.add(m);
                   }
 
                   musicAction['type'] = MusicActions.newMusic;
                   MusicInfo musicInfo = new MusicInfo(
-                    songName: musicInfoList[index]['songname'],
-                    songMid: songMid,
-                    singerName: musicInfoList[index]['singer'][0]['name'],
-                    albumMid: musicInfoList[index]['albummid'],
+                    albumMid: musicInfoList[index]['albumMid'],
+                    singerName: musicInfoList[index]['singerName'],
+                    songMid: musicInfoList[index]['songMid'],
+                    songName: musicInfoList[index]['songName'],
+                    picUrl: musicInfoList[index]['albumPicUrl'],
+                    hash: widget.musicList[index]['hash'],
+                    source: widget.source,
                   );
                   musicAction['musicInfo'] = musicInfo;
                   musicAction['currentMusicIndex'] = index;

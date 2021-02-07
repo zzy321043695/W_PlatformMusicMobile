@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-24 15:49:09
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-31 21:17:54
+ * @LastEditTime: 2021-02-05 11:06:01
  */
 import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:dio/dio.dart';
@@ -47,6 +47,14 @@ class MusicInfo {
       this.songName,
       this.source,
       this.url});
+
+  Future wangyiGetPicUrl() async {
+    if (this.source == 'wangyi') {
+      await Net.getWangyiSongPicUrl(this.songMid).then((v) {
+        this.picUrl = v;
+      });
+    }
+  }
 
   Future getColor() async {
     await getColorFromUrl(this.picUrl).then((value) {
@@ -339,6 +347,7 @@ ThunkAction handler(action) {
       store.dispatch(action);
     } else if (action['type'] == MusicActions.play) {
       if (action['musicList'] == null) {
+        await store.state.musicInfo.wangyiGetPicUrl();
         await store.state.musicInfo.getColor();
         await store.state.musicInfo.getLyric();
         await store.state.musicInfo.getUrl();
@@ -392,6 +401,7 @@ ThunkAction handler(action) {
       LogUtils.e(m.songMid);
       print(action['musicInfo']);
       if (action['musicInfo'].source != 'kugou') {
+        await action['musicInfo'].wangyiGetPicUrl();
         await action['musicInfo'].getColor();
         await action['musicInfo'].getLyric();
         await action['musicInfo'].getUrl();
@@ -465,6 +475,7 @@ ThunkAction handler(action) {
         MusicInfo music =
             store.state.musicList[store.state.currentMusicIndex - 1];
         if (music.source != 'kugou') {
+          await music.wangyiGetPicUrl();
           await music.getColor();
           await music.getLyric();
           await music.getUrl();
@@ -516,6 +527,7 @@ ThunkAction handler(action) {
         MusicInfo music =
             store.state.musicList[store.state.currentMusicIndex + 1];
         if (music.source != 'kugou') {
+          await music.wangyiGetPicUrl();
           await music.getUrl();
           await music.getLyric();
           await music.getColor();
@@ -557,6 +569,7 @@ ThunkAction handler(action) {
       } else {
         MusicInfo music = store.state.musicList[0];
         if (music.source != 'kugou') {
+          await music.wangyiGetPicUrl();
           await music.getUrl();
           await music.getLyric();
           await music.getColor();

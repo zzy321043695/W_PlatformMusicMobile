@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 15:31:17
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-31 21:11:36
+ * @LastEditTime: 2021-02-05 11:28:10
  */
 
 import 'dart:convert';
@@ -300,15 +300,15 @@ class Net {
             songItem['songMid'] = musicList[i]['album_id'].toString();
             songItem['albumMid'] = musicList[i]['album_audio_id'].toString();
             songItem['singerName'] = musicList[i]['singername'];
-            if (musicList[i]['hash'] != 0 || musicList[i]['hash'] != null) {
+            if (musicList[i]['hash'] != '' && musicList[i]['hash'] != null) {
               songItem['hash'] = musicList[i]['hash'];
-            } else if (musicList[i]['hash_320'] != 0 ||
+            } else if (musicList[i]['hash_320'] != '' &&
                 musicList[i]['hash_320'] != null) {
               songItem['hash'] = musicList[i]['hash_320'];
-            } else if (musicList[i]['hash_ape'] != 0 ||
+            } else if (musicList[i]['hash_ape'] != '' &&
                 musicList[i]['hash_ape'] != null) {
               songItem['hash'] = musicList[i]['hash_ape'];
-            } else if (musicList[i]['hash_flac'] != 0 ||
+            } else if (musicList[i]['hash_flac'] != '' &&
                 musicList[i]['hash_flac'] != null) {
               songItem['hash'] = musicList[i]['hash_flac'];
             } else {}
@@ -565,6 +565,110 @@ class Net {
     } catch (e) {
       //print(e);
     }
+  }
+
+  static searchSong(String source, String key, String type) async {
+    String url = serverUrl + '/' + source + '/search' + '?key=' + key;
+    Response response;
+    var songlist = [];
+    switch (source) {
+      case 'qq':
+        response = await Dio().get(url);
+        var musicList = [];
+        musicList = response.data['data']['song']['list'];
+        for (int i = 0; i < musicList.length; i++) {
+          Map songItem = {};
+          songItem['songName'] = musicList[i]['songname'];
+          songItem['songMid'] = musicList[i]['songmid'];
+          songItem['albumMid'] = musicList[i]['albummid'];
+          songItem['singerName'] = musicList[i]['singer'][0]['name'];
+          songItem['albumPicUrl'] =
+              Net.qqAlbumPicUrl + musicList[i]['albummid'] + '.jpg';
+          // //print(songItem);
+          songlist.add(songItem);
+        }
+        print(songlist);
+        break;
+      case 'migu':
+        response = await Dio().get(url);
+        var musicList = [];
+        musicList = response.data['musics'];
+        for (int i = 0; i < musicList.length; i++) {
+          Map songItem = {};
+          songItem['songName'] = musicList[i]['songName'];
+          songItem['songMid'] = musicList[i]['copyrightId'];
+          songItem['albumMid'] = musicList[i]['albumId'];
+          songItem['singerName'] = musicList[i]['singerName'];
+          songItem['albumPicUrl'] = musicList[i]['cover'];
+          songlist.add(songItem);
+        }
+        break;
+      case 'kuwo':
+        response = await Dio().get(url);
+        var musicList = [];
+        musicList = response.data['data']['list'];
+        for (int i = 0; i < musicList.length; i++) {
+          Map songItem = {};
+          songItem['songName'] = musicList[i]['name'];
+          songItem['songMid'] = musicList[i]['rid'].toString();
+          songItem['albumMid'] = musicList[i]['albumid'].toString();
+          songItem['singerName'] = musicList[i]['artist'];
+          songItem['albumPicUrl'] = musicList[i]['albumpic'];
+          songlist.add(songItem);
+        }
+        break;
+      case 'kugou':
+        response = await Dio().get(url);
+        var musicList = [];
+        musicList = response.data['data']['lists'];
+        for (int i = 0; i < musicList.length; i++) {
+          Map songItem = {};
+          String songName = musicList[i]['SongName'];
+          songName = songName.replaceAll('<em>', '');
+          songName = songName.replaceAll('</em>', '');
+          // songName = songName..replaceAll('<em>', '')..replaceAll('</em>', '');
+          songItem['songName'] = songName;
+          songItem['songMid'] = musicList[i]['Audioid'].toString();
+          songItem['albumMid'] = musicList[i]['AlbumID'];
+
+          songItem['singerName'] = musicList[i]['SingerName'];
+          if (musicList[i]['FileHash'] != '' &&
+              musicList[i]['FileHash'] != null) {
+            songItem['hash'] = musicList[i]['FileHash'];
+          } else if (musicList[i]['HQFileHash'] != '' &&
+              musicList[i]['HQFileHash'] != null) {
+            songItem['hash'] = musicList[i]['HQFileHash'];
+          } else if (musicList[i]['SQFileHash'] != '' &&
+              musicList[i]['SQFileHash'] != null) {
+            songItem['hash'] = musicList[i]['SQFileHash'];
+          } else {}
+          songlist.add(songItem);
+        }
+        break;
+      case 'wangyi':
+        String wangyiSearchUrl = wangyiUrl + '/search?keywords=' + key;
+        response = await Dio().get(wangyiSearchUrl);
+        var musicList = [];
+        musicList = response.data['result']['songs'];
+        for (int i = 0; i < musicList.length; i++) {
+          Map songItem = {};
+          songItem['songName'] = musicList[i]['name'];
+          songItem['songMid'] = musicList[i]['id'].toString();
+          songItem['albumMid'] = musicList[i]['album']['id'].toString();
+          songItem['singerName'] = musicList[i]['artists'][0]['name'];
+          // songItem['albumPicUrl'] = musicList[i]['al']['picUrl'];
+          songlist.add(songItem);
+        }
+        break;
+    }
+    return songlist;
+  }
+
+  static getWangyiSongPicUrl(String id) async {
+    String url = wangyiUrl + '/song/detail?ids=' + id;
+    Response songDetailResponse = await Dio().get(url);
+    String picUrl = songDetailResponse.data['songs'][0]['al']['picUrl'];
+    return picUrl;
   }
 
   static getHttp() async {

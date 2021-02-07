@@ -3,10 +3,11 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-30 16:37:22
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-31 21:31:02
+ * @LastEditTime: 2021-02-05 11:10:25
  */
 import 'package:flutter/material.dart';
 import 'package:music_learn/src/http/net.dart';
+import 'package:music_learn/src/pages/config/music_source.dart';
 import 'package:music_learn/src/pages/music/custom_bottom_navigation_bar_notkey.dart';
 import 'package:music_learn/src/utils/log_utils.dart';
 import 'package:music_learn/src/widgets/music_search_list.dart';
@@ -43,7 +44,7 @@ class _SearchPageState extends State<SearchPage>
       text: "mv",
     ),
   ];
-  Map<String, dynamic> _searchList;
+  List _searchList;
   TabController _tabController;
   TextEditingController _textController;
 
@@ -59,7 +60,7 @@ class _SearchPageState extends State<SearchPage>
     super.dispose();
   }
 
-  var val = 1;
+  var val = MusicSource.source;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -71,24 +72,32 @@ class _SearchPageState extends State<SearchPage>
           actions: [
             DropdownButtonHideUnderline(
               child: DropdownButton(
-                  value: val,
+                  value: MusicSource.source,
                   items: [
                     DropdownMenuItem(
-                      child: Text('企鹅'),
-                      value: 1,
-                    ),
-                    DropdownMenuItem(
-                      child: Text('网易'),
-                      value: 2,
+                      child: Text('QQ'),
+                      value: 'qq',
                     ),
                     DropdownMenuItem(
                       child: Text('咪咕'),
-                      value: 3,
+                      value: 'migu',
+                    ),
+                    DropdownMenuItem(
+                      child: Text('酷我'),
+                      value: 'kuwo',
+                    ),
+                    DropdownMenuItem(
+                      child: Text('酷狗'),
+                      value: 'kugou',
+                    ),
+                    DropdownMenuItem(
+                      child: Text('网易'),
+                      value: 'wangyi',
                     )
                   ],
                   onChanged: (value) {
                     setState(() {
-                      val = value;
+                      MusicSource.source = value;
                     });
                   }),
             ),
@@ -98,10 +107,17 @@ class _SearchPageState extends State<SearchPage>
             onSubmitted: (value) {
               //LogUtils.e("搜索结果");
               //print('$value');
-              Net.qqSearch(key: value).then((v) {
+              /* Net.qqSearch(key: value).then((v) {
                 //print(v);
                 setState(() {
                   _searchList = v.data['data']['song'];
+                });
+              }); */
+              Net.searchSong(MusicSource.source, value, '').then((v) {
+                setState(() {
+                  _searchList = v;
+                  print(MusicSource.source);
+                  print(v);
                 });
               });
             },
@@ -154,21 +170,11 @@ class _SearchPageState extends State<SearchPage>
           );
         }).toList(),
       ),
-      bottomNavigationBar:
-          CustomBottomNavigationBarNotkey(), //customBottomNavigationBarNotkey,
+      bottomNavigationBar: CustomBottomNavigationBarNotkey(),
     );
   }
 
   Widget tabView(String tabTitle) {
-    return MusicListWidget(_searchList);
-    /* ChangeNotifierProvider(
-      create: (context) => MusicPlaying(),
-      child: MusicListWidget(_searchList),
-    ); */
-    /* if (tabTitle == myTabs[0].text) {
-      return MusicListWidget(_searchList);
-    } else if (tabTitle == myTabs[1].text) {
-      return Container();
-    } */
+    return MusicListWidget(_searchList, MusicSource.source);
   }
 }

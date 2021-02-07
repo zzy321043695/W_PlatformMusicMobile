@@ -3,11 +3,13 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 12:00:14
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-23 17:40:57
+ * @LastEditTime: 2021-02-07 16:22:29
  */
 import 'package:flutter/material.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
+import 'package:music_learn/src/pages/config/music_controller.dart';
 import 'package:music_learn/src/pages/config/music_playing.dart';
+import 'package:music_learn/src/pages/local_music/local_music.dart';
 
 import 'package:music_learn/src/pages/play_list/favorite_list.dart';
 import 'package:music_learn/src/utils/navigator_utils.dart';
@@ -36,13 +38,20 @@ class _MinePageState extends State<MinePage> {
           type: "first",
           icon: iconList[0],
           text: menuList[0],
-          onTap: () {},
+          onTap: () {
+            NavigatorUtils.pushPage(
+                context: context, targPage: LocalMusicPage());
+          },
         ),
         menuItem(
           type: "other",
           icon: iconList[1],
           text: menuList[1],
-          onTap: () {},
+          onTap: () {
+            MusicController.audioPlayer.play(
+                '/storage/emulated/0/Android/data/com.example.music_learn/filesmusic_learn/四季予你-程响-004bd0Av3rVEE3(qq).mp3',
+                isLocal: true);
+          },
         ),
         menuItem(
           type: "end",

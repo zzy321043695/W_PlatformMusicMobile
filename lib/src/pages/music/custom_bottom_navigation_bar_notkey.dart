@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-24 15:15:33
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-31 02:49:09
+ * @LastEditTime: 2021-02-07 16:56:24
  */
 
 import 'package:flutter/material.dart';
@@ -58,29 +58,33 @@ class _CustomBottomNavigationBarState
                     ),
                     backgroundColor: Colors.white10,
                   ),
+                  /* Expanded(
+                    child: Text(
+                      state.musicInfo.songName,
+                      style: TextStyle(fontWeight: FontWeight.normal),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ), */
+
                   Expanded(
-                    child: Container(
-                      padding: EdgeInsets.only(left: 10),
-                      child: Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              state.musicInfo.songName,
-                              style: TextStyle(fontWeight: FontWeight.normal),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                            Text(
-                              state.musicInfo.singerName,
-                              style: TextStyle(
-                                  fontWeight: FontWeight.normal,
-                                  fontSize: 12,
-                                  color: Colors.grey),
-                            )
-                          ],
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '   ' + state.musicInfo.songName,
+                          style: TextStyle(fontWeight: FontWeight.normal),
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ),
+                        Text(
+                          '    ' + state.musicInfo.singerName,
+                          style: TextStyle(
+                            fontWeight: FontWeight.normal,
+                            fontSize: 12,
+                            color: Colors.grey,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   StoreConnector<MusicState, VoidCallback>(

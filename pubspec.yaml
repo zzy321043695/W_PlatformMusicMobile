@@ -39,11 +39,11 @@ dependencies:
 
   crypto: ^2.1.1+1
 # 音乐播放
-  audioplayers: ^0.17.0
+  audioplayers: ^0.17.3
 #颜色提取器
   color_thief_flutter: ^1.0.1
 
-  cached_network_image: 2.0.0-rc
+  cached_network_image: ^2.5.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -51,9 +51,9 @@ dependencies:
 #状态管理
   provider: ^4.3.2+3
 
-  redux:  ^3.0.0
-  flutter_redux: ^0.5.3
-  redux_thunk: ^0.2.1
+  redux: ^4.0.0+3
+  flutter_redux: ^0.7.0
+  redux_thunk: ^0.3.0
   #信息提示
   fluttertoast: ^7.1.6
 

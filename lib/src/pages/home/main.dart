@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 10:34:18
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-27 20:58:27
+ * @LastEditTime: 2021-02-05 12:18:12
  */
 
 import 'package:flutter/material.dart';
@@ -12,18 +12,21 @@ import 'package:music_learn/src/pages/home/minePage.dart';
 import 'package:music_learn/src/pages/home/rank_list.dart';
 import 'package:music_learn/src/pages/music/custom_bottom_navigation_bar_notkey.dart';
 import 'package:music_learn/src/pages/search/search.dart';
+import 'package:music_learn/src/pages/ui_5/home_page.dart';
 import 'package:music_learn/src/utils/log_utils.dart';
 import 'package:music_learn/src/utils/navigator_utils.dart';
 
 class MainPage extends StatefulWidget {
+  final Function openMenu;
+  MainPage(this.openMenu);
   @override
   _MainPageState createState() {
     return _MainPageState();
   }
 }
 
-class _MainPageState extends State<StatefulWidget>
-    with SingleTickerProviderStateMixin {
+class _MainPageState extends State<MainPage>
+    with SingleTickerProviderStateMixin, TickerProviderStateMixin {
   final List<Tab> myTabs = <Tab>[
     Tab(
       text: "我的",
@@ -59,8 +62,11 @@ class _MainPageState extends State<StatefulWidget>
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: DefaultTabController(
+    return Container(
+      color: Colors.white,
+    );
+    Scaffold(
+      body: DefaultTabController(
         length: 3,
         child: Scaffold(
           appBar: AppBar(
@@ -72,7 +78,7 @@ class _MainPageState extends State<StatefulWidget>
                 Icons.menu,
                 color: Colors.black,
               ),
-              onPressed: () {},
+              onPressed: widget.openMenu,
             ),
             actions: [
               IconButton(

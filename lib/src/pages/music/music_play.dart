@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-23 10:52:20
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-01-31 02:49:58
+ * @LastEditTime: 2021-02-07 15:59:25
  */
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:dio/dio.dart';
@@ -12,6 +12,7 @@ import 'package:flutter_redux/flutter_redux.dart';
 import 'package:music_learn/src/http/net.dart';
 import 'package:music_learn/src/pages/config/music_controller.dart';
 import 'package:music_learn/src/pages/config/music_playing.dart';
+import 'package:music_learn/src/utils/local_file_utils.dart';
 import 'package:music_learn/src/widgets/progress_bar.dart';
 import 'package:music_learn/src/widgets/lyric_roll.dart';
 import 'package:music_learn/src/utils/log_utils.dart';
@@ -40,10 +41,10 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
                 children: [
                   albumPic(
                       state.musicInfo.coverMainColor, state.musicInfo.picUrl),
-                  Expanded(
+                  /*  Expanded(
                     child: LyricRoll(state.musicInfo.lyric, state.state),
                     // child: Container(),
-                  ),
+                  ), */
                   Container(
                     // margin: EdgeInsets.only(left: 35),
                     child: Row(
@@ -71,7 +72,10 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
                               ),
                         IconButton(
                           icon: Icon(Icons.get_app),
-                          onPressed: () {},
+                          onPressed: () {
+                            LocalFileUtils.downloadMusic(
+                                'url', state.musicInfo);
+                          },
                         ),
                         IconButton(
                           icon: Icon(Icons.more_vert),
@@ -80,10 +84,10 @@ class _MusicPlayPageState extends State<MusicPlayPage> {
                       ],
                     ),
                   ),
-                  ProgressBar(
+                  /*  ProgressBar(
                     color: state.musicInfo.coverMainColor,
                     state: state.state,
-                  ),
+                  ), */
                   musicController(state),
                   SizedBox(
                     height: 20,
