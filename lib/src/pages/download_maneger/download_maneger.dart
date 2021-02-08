@@ -1,31 +1,32 @@
 /*
  * @Description: 
  * @Author: zhengzhenyu
- * @Date: 2021-01-22 12:01:08
+ * @Date: 2021-02-08 10:41:56
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-08 09:43:18
+ * @LastEditTime: 2021-02-08 10:55:32
  */
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
 import 'package:music_learn/src/pages/config/music_playing.dart';
 import 'package:music_learn/src/pages/music/custom_bottom_navigation_bar_notkey.dart';
-import 'package:music_learn/src/utils/favorite_list_utils.dart';
-import 'package:music_learn/src/utils/log_utils.dart';
+import 'package:music_learn/src/utils/download_list_utils.dart';
 
-class FavoriteListPage extends StatefulWidget {
+class DownloadListPage extends StatefulWidget {
   @override
   _FavoriteListPageState createState() => _FavoriteListPageState();
 }
 
-class _FavoriteListPageState extends State<FavoriteListPage> {
+class _FavoriteListPageState extends State<DownloadListPage> {
   Map musicAction = {};
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+    List<MusicInfo> musicList = DownloadListUtils.musicList;
+    print(musicList);
     return Scaffold(
       appBar: AppBar(
-        title: Text("我喜欢的音乐"),
+        title: Text("已下载的音乐"),
       ),
       body: ListView.builder(
         itemBuilder: (context, index) {
@@ -36,13 +37,13 @@ class _FavoriteListPageState extends State<FavoriteListPage> {
             builder: (store, callback) {
               return new ListTile(
                 title: new Text(
-                  FavoriteListUtils.musicList[index].songName,
+                  musicList[index].songName,
                   style: TextStyle(
                     fontSize: 15,
                     color: Colors.black,
                   ),
                 ),
-                subtitle: Text(FavoriteListUtils.musicList[index].singerName),
+                subtitle: Text(musicList[index].singerName),
                 dense: true,
                 leading: CircleAvatar(
                   backgroundColor: Colors.white10,
@@ -54,21 +55,18 @@ class _FavoriteListPageState extends State<FavoriteListPage> {
                   ),
                 ),
                 onTap: () {
-                  String songMid = FavoriteListUtils.musicList[index].songMid;
-
                   musicAction['type'] = MusicActions.newMusic;
-                  MusicInfo musicInfo = FavoriteListUtils.musicList[index];
+                  MusicInfo musicInfo = musicList[index];
                   musicAction['musicInfo'] = musicInfo;
                   musicAction['currentMusicIndex'] = index;
-                  musicAction['musicList'] = FavoriteListUtils.musicList;
-
+                  musicAction['musicList'] = musicList;
                   callback();
                 },
               );
             },
           );
         },
-        itemCount: FavoriteListUtils.musicList.length,
+        itemCount: musicList.length,
       ),
       bottomNavigationBar: CustomBottomNavigationBarNotkey(),
     );

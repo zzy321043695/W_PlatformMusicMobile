@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-24 15:49:09
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-05 11:06:01
+ * @LastEditTime: 2021-02-08 14:11:17
  */
 import 'package:color_thief_flutter/color_thief_flutter.dart';
 import 'package:dio/dio.dart';
@@ -12,7 +12,9 @@ import 'package:fluttertoast/fluttertoast.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
 import 'package:music_learn/src/http/net.dart';
 import 'package:music_learn/src/pages/config/music_controller.dart';
+import 'package:music_learn/src/utils/download_list_utils.dart';
 import 'package:music_learn/src/utils/log_utils.dart';
+import 'package:music_learn/src/utils/recent_list_utils.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 
@@ -35,18 +37,21 @@ class MusicInfo {
   String source = "qq";
   List<int> coverMainColor;
   String url;
+  String localPath;
 
-  MusicInfo(
-      {this.albumMid,
-      this.coverMainColor,
-      this.lyric,
-      this.singerName,
-      this.songMid,
-      this.picUrl,
-      this.hash,
-      this.songName,
-      this.source,
-      this.url});
+  MusicInfo({
+    this.albumMid,
+    this.coverMainColor,
+    this.lyric,
+    this.singerName,
+    this.songMid,
+    this.picUrl,
+    this.hash,
+    this.songName,
+    this.source,
+    this.url,
+    this.localPath,
+  });
 
   Future wangyiGetPicUrl() async {
     if (this.source == 'wangyi') {
@@ -172,139 +177,6 @@ class MusicInfo {
   }
 }
 
-class FavoriteMusicState {
-  static List<MusicInfo> favoriteList =
-      FavoriteMusicState.getFavoriteListFromLocal();
-
-  // static LocalCacheLoader get loader => LocalCacheLoader('favorite');
-
-  static List<MusicInfo> getFavoriteListFromLocal() {
-    var songNameList = LocalCacheLoader('songNameList')
-        .all
-        .map(
-          (cache) => cache.value['1'],
-        )
-        .toList();
-    var songMidList = LocalCacheLoader('songMidList')
-        .all
-        .map(
-          (cache) => cache.value['1'],
-        )
-        .toList();
-    var singerNameList = LocalCacheLoader('singerNameList')
-        .all
-        .map(
-          (cache) => cache.value['1'],
-        )
-        .toList();
-    var albumMidList = LocalCacheLoader('albumMidList')
-        .all
-        .map(
-          (cache) => cache.value['1'],
-        )
-        .toList();
-    var sourceList = LocalCacheLoader('source')
-        .all
-        .map(
-          (cache) => cache.value['1'],
-        )
-        .toList();
-    var picUrlList = LocalCacheLoader('picUrl')
-        .all
-        .map(
-          (cache) => cache.value['1'],
-        )
-        .toList();
-    //LogUtils.e("收藏长度");
-    //print(songNameList.length);
-    List<MusicInfo> result = [];
-    for (int i = 0; i < songNameList.length; i++) {
-      MusicInfo m = MusicInfo(
-        songName: songNameList[i],
-        songMid: songMidList[i],
-        singerName: singerNameList[i],
-        albumMid: albumMidList[i],
-        picUrl: picUrlList[i],
-        source: sourceList[i],
-      );
-      result.add(m);
-    }
-    return result;
-  }
-
-  static void saveFavoriteListToLocal(List<MusicInfo> musicList) {
-    LocalCacheLoader('songNameList').clearAll();
-    LocalCacheLoader('songMidList').clearAll();
-    LocalCacheLoader('singerNameList').clearAll();
-    LocalCacheLoader('albumMidList').clearAll();
-    for (int i = 0; i < musicList.length; i++) {
-      LocalCacheLoader('songNameList').saveById(i.toString(), {
-        '1': musicList[i].songName,
-      });
-      LocalCacheLoader('songMidList').saveById(i.toString(), {
-        '1': musicList[i].songMid,
-      });
-      LocalCacheLoader('singerNameList').saveById(i.toString(), {
-        '1': musicList[i].singerName,
-      });
-      LocalCacheLoader('albumMidList').saveById(i.toString(), {
-        '1': musicList[i].albumMid,
-      });
-      LocalCacheLoader('source').saveById(i.toString(), {
-        '1': musicList[i].source,
-      });
-      LocalCacheLoader('picUrl').saveById(i.toString(), {
-        '1': musicList[i].picUrl,
-      });
-    }
-  }
-
-  static void addFavoriteMusic(MusicInfo m) {
-    bool alreadyExits = false;
-    // List<String> localData = [];
-    Map localData = {};
-    for (MusicInfo tem in FavoriteMusicState.favoriteList) {
-      if (tem.songMid == m.songMid && tem.source == m.source) {
-        alreadyExits = true;
-        break;
-      }
-    }
-    if (!alreadyExits) {
-      FavoriteMusicState.favoriteList.add(m);
-      FavoriteMusicState.saveFavoriteListToLocal(
-          FavoriteMusicState.favoriteList);
-    }
-  }
-
-  static void removeFavoriteMusic(MusicInfo m) {
-    bool alreadyExits = false;
-    Map localData = {};
-    for (MusicInfo tem in FavoriteMusicState.favoriteList) {
-      if (tem.songMid == m.songMid && tem.source == m.source) {
-        alreadyExits = true;
-        FavoriteMusicState.favoriteList.remove(tem);
-        break;
-      }
-    }
-    if (alreadyExits) {
-      FavoriteMusicState.saveFavoriteListToLocal(
-          FavoriteMusicState.favoriteList);
-    }
-  }
-
-  static bool isFavoriteMusic(MusicInfo m) {
-    bool alreadyExits = false;
-
-    for (MusicInfo tem in FavoriteMusicState.favoriteList) {
-      if (tem.songMid == m.songMid && tem.source == m.source) {
-        alreadyExits = true;
-        break;
-      }
-    }
-    return alreadyExits;
-  }
-}
-
 class MusicState {
   MusicInfo musicInfo;
   get musicInfoGet => musicInfo;
@@ -338,6 +210,145 @@ MusicState musicStateInit() {
   return MusicState(musicInfo, musicList, 0, "stop");
 }
 
+Future<bool> musicPlay(MusicInfo m, MusicState state) async {
+  if (m.source != 'kugou') {
+    await m.wangyiGetPicUrl();
+    bool needPlayOnline = true;
+    if (DownloadListUtils.isMusic(m)) {
+      m.localPath = DownloadListUtils.getLocalPath(m);
+      await MusicController.audioPlayer
+          .play(m.localPath, isLocal: true)
+          .then((value) {
+        if (value == 1) {
+          // success
+          MusicController.status = "playing";
+          RecentListUtils.addMusic(m);
+          //LogUtils.e('播放成功');
+          state.state = "playing";
+          needPlayOnline = false;
+          return true;
+        } else {
+          MusicController.status = "pause";
+          //LogUtils.e('播放失败');
+          state.state = "pause";
+          Fluttertoast.showToast(
+              msg: "文件已被移除，转为在线播放",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black45,
+              textColor: Colors.white,
+              fontSize: 14.0);
+          return false;
+        }
+      });
+    }
+    if (needPlayOnline) {
+      await m.getUrl();
+      if (m.url == '' || m.url == null) {
+        Fluttertoast.showToast(
+            msg: "无该歌曲资源",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.black45,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        return false;
+      }
+      await MusicController.audioPlayer.play(m.url).then((value) {
+        if (value == 1) {
+          // success
+          MusicController.status = "playing";
+          RecentListUtils.addMusic(m);
+          //LogUtils.e('播放成功');
+          state.state = "playing";
+          return true;
+        } else {
+          MusicController.status = "pause";
+          //LogUtils.e('播放失败');
+          state.state = "pause";
+          Fluttertoast.showToast(
+              msg: "播放失败",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black45,
+              textColor: Colors.white,
+              fontSize: 16.0);
+          return false;
+        }
+      });
+    }
+    await m.getColor();
+    await m.getLyric();
+  } else {
+    await m.kugouGetSongurlAndLyricAndPicurl();
+    bool needPlayOnline = true;
+    if (DownloadListUtils.isMusic(m)) {
+      m.localPath = DownloadListUtils.getLocalPath(m);
+      await MusicController.audioPlayer
+          .play(m.localPath, isLocal: true)
+          .then((value) {
+        if (value == 1) {
+          // success
+          MusicController.status = "playing";
+          RecentListUtils.addMusic(m);
+          //LogUtils.e('播放成功');
+          state.state = "playing";
+          needPlayOnline = false;
+          return true;
+        } else {
+          MusicController.status = "pause";
+          //LogUtils.e('播放失败');
+          state.state = "pause";
+          Fluttertoast.showToast(
+              msg: "文件已被移除，转为在线播放",
+              toastLength: Toast.LENGTH_SHORT,
+              gravity: ToastGravity.BOTTOM,
+              timeInSecForIosWeb: 1,
+              backgroundColor: Colors.black45,
+              textColor: Colors.white,
+              fontSize: 14.0);
+          return false;
+        }
+      });
+    }
+    if (needPlayOnline) {
+      if (m.url == '' || m.url == null) {
+        Fluttertoast.showToast(
+            msg: "无该歌曲资源",
+            toastLength: Toast.LENGTH_SHORT,
+            gravity: ToastGravity.BOTTOM,
+            timeInSecForIosWeb: 1,
+            backgroundColor: Colors.black45,
+            textColor: Colors.white,
+            fontSize: 16.0);
+        return false;
+      }
+      await MusicController.audioPlayer.play(m.url).then((value) {
+        if (value == 1) {
+          // success
+          MusicController.status = "playing";
+          RecentListUtils.addMusic(m);
+          //LogUtils.e('play success');
+          state.state = "playing";
+        } else {
+          MusicController.status = "pause";
+          //LogUtils.e('play failed');
+          state.state = "pause";
+        }
+      });
+    }
+    await m.getColor();
+  }
+  return true;
+}
+
+Future<bool> musicResume(MusicInfo m) async {
+  return true;
+}
+
 ThunkAction handler(action) {
   //LogUtils.e("中间件");
   return (Store store) async {
@@ -347,36 +358,8 @@ ThunkAction handler(action) {
       store.dispatch(action);
     } else if (action['type'] == MusicActions.play) {
       if (action['musicList'] == null) {
-        await store.state.musicInfo.wangyiGetPicUrl();
-        await store.state.musicInfo.getColor();
-        await store.state.musicInfo.getLyric();
-        await store.state.musicInfo.getUrl();
-        if (store.state.musicInfo.url == '' ||
-            store.state.musicInfo.url == null) {
-          Fluttertoast.showToast(
-              msg: "无该歌曲资源",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.black45,
-              textColor: Colors.white,
-              fontSize: 16.0);
-          return;
-        }
-        await MusicController.audioPlayer
-            .play(store.state.musicInfo.url)
-            .then((value) {
-          if (value == 1) {
-            // success
-            MusicController.status = "playing";
-            //LogUtils.e('播放成功');
-            store.state.state = "playing";
-          } else {
-            MusicController.status = "pause";
-            //LogUtils.e('播放失败');
-            store.state.state = "pause";
-          }
-        });
+        bool isSeccess = await musicPlay(store.state.musicInfo, store.state);
+        if (!isSeccess) return;
         store.dispatch(action);
       } else {
         await MusicController.audioPlayer.resume().then((value) {
@@ -394,119 +377,16 @@ ThunkAction handler(action) {
       }
       store.dispatch(action);
     } else if (action['type'] == MusicActions.newMusic) {
-      LogUtils.e('音乐源');
       MusicInfo m = action['musicInfo'];
-      LogUtils.e(m.source);
-      LogUtils.e(m.picUrl);
-      LogUtils.e(m.songMid);
-      print(action['musicInfo']);
-      if (action['musicInfo'].source != 'kugou') {
-        await action['musicInfo'].wangyiGetPicUrl();
-        await action['musicInfo'].getColor();
-        await action['musicInfo'].getLyric();
-        await action['musicInfo'].getUrl();
-        //LogUtils.e("开始播放");
-        //LogUtils.e(action['musicInfo'].url);
-        //print(action['musicInfo'].lyric);
-        if (action['musicInfo'].url == '' || action['musicInfo'].url == null) {
-          Fluttertoast.showToast(
-              msg: "无该歌曲资源",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.black45,
-              textColor: Colors.white,
-              fontSize: 16.0);
-          return;
-        }
-        LogUtils.e(action['musicInfo'].url);
-        await MusicController.audioPlayer
-            .play(action['musicInfo'].url)
-            .then((value) {
-          if (value == 1) {
-            // success
-            MusicController.status = "playing";
-            //LogUtils.e('play success');
-            store.state.state = "playing";
-          } else {
-            MusicController.status = "pause";
-            //LogUtils.e('play failed');
-            store.state.state = "pause";
-          }
-        });
-      } else {
-        await action['musicInfo'].kugouGetSongurlAndLyricAndPicurl();
-        await action['musicInfo'].getColor();
-        //LogUtils.e("开始播放");
-        //LogUtils.e(action['musicInfo'].url);
-        //print(action['musicInfo'].lyric);
-        if (action['musicInfo'].url == '' || action['musicInfo'].url == null) {
-          Fluttertoast.showToast(
-              msg: "无该歌曲资源",
-              toastLength: Toast.LENGTH_SHORT,
-              gravity: ToastGravity.BOTTOM,
-              timeInSecForIosWeb: 1,
-              backgroundColor: Colors.black45,
-              textColor: Colors.white,
-              fontSize: 16.0);
-          return;
-        }
-        await MusicController.audioPlayer
-            .play(action['musicInfo'].url)
-            .then((value) {
-          if (value == 1) {
-            // success
-            MusicController.status = "playing";
-            //LogUtils.e('play success');
-            store.state.state = "playing";
-          } else {
-            MusicController.status = "pause";
-            //LogUtils.e('play failed');
-            store.state.state = "pause";
-          }
-        });
-      }
-
-      //LogUtils.e("新歌");
-      //LogUtils.e(action['musicInfo'].songMid);
+      bool isSeccess = await musicPlay(m, store.state);
+      if (!isSeccess) return;
       store.dispatch(action);
     } else if (action['type'] == MusicActions.pre) {
       if (store.state.currentMusicIndex > 0) {
         MusicInfo music =
             store.state.musicList[store.state.currentMusicIndex - 1];
-        if (music.source != 'kugou') {
-          await music.wangyiGetPicUrl();
-          await music.getColor();
-          await music.getLyric();
-          await music.getUrl();
-          if (music.url == '' || music.url == null) {
-            Fluttertoast.showToast(
-                msg: "无该歌曲资源",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
-            return;
-          }
-          await MusicController.audioPlayer.play(music.url);
-        } else {
-          await music.kugouGetSongurlAndLyricAndPicurl();
-          await music.getColor();
-          if (music.url == '' || music.url == null) {
-            Fluttertoast.showToast(
-                msg: "无该歌曲资源",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
-            return;
-          }
-          await MusicController.audioPlayer.play(music.url);
-        }
+        bool isSeccess = await musicPlay(music, store.state);
+        if (!isSeccess) return;
 
         store.state.musicInfo = music;
         store.state.currentMusicIndex--;
@@ -518,49 +398,11 @@ ThunkAction handler(action) {
         store.dispatch(action);
       }
     } else if (action['type'] == MusicActions.next) {
-      // if(action['type'] == MusicActions.next)
-      //LogUtils.e("下一首");
       if (store.state.currentMusicIndex < store.state.musicList.length - 1) {
-        //print(store.state.currentMusicIndex);
-        //print(store.state.musicList.length);
-
         MusicInfo music =
             store.state.musicList[store.state.currentMusicIndex + 1];
-        if (music.source != 'kugou') {
-          await music.wangyiGetPicUrl();
-          await music.getUrl();
-          await music.getLyric();
-          await music.getColor();
-
-          if (music.url == '' || music.url == null) {
-            Fluttertoast.showToast(
-                msg: "无该歌曲资源",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
-            return;
-          }
-          await MusicController.audioPlayer.play(music.url);
-        } else {
-          await music.kugouGetSongurlAndLyricAndPicurl();
-          await music.getColor();
-
-          if (music.url == '' || music.url == null) {
-            Fluttertoast.showToast(
-                msg: "无该歌曲资源",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
-            return;
-          }
-          await MusicController.audioPlayer.play(music.url);
-        }
+        bool isSeccess = await musicPlay(music, store.state);
+        if (!isSeccess) return;
 
         store.state.musicInfo = music;
         store.state.currentMusicIndex++;
@@ -568,49 +410,13 @@ ThunkAction handler(action) {
         store.dispatch(action);
       } else {
         MusicInfo music = store.state.musicList[0];
-        if (music.source != 'kugou') {
-          await music.wangyiGetPicUrl();
-          await music.getUrl();
-          await music.getLyric();
-          await music.getColor();
-
-          if (music.url == '' || music.url == null) {
-            Fluttertoast.showToast(
-                msg: "无该歌曲资源",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
-            return;
-          }
-          await MusicController.audioPlayer.play(music.url);
-        } else {
-          await music.kugouGetSongurlAndLyricAndPicurl();
-          await music.getColor();
-
-          if (music.url == '' || music.url == null) {
-            Fluttertoast.showToast(
-                msg: "无该歌曲资源",
-                toastLength: Toast.LENGTH_SHORT,
-                gravity: ToastGravity.BOTTOM,
-                timeInSecForIosWeb: 1,
-                backgroundColor: Colors.black45,
-                textColor: Colors.white,
-                fontSize: 16.0);
-            return;
-          }
-          await MusicController.audioPlayer.play(music.url);
-        }
+        bool isSeccess = await musicPlay(music, store.state);
+        if (!isSeccess) return;
 
         store.state.musicInfo = music;
         store.state.currentMusicIndex = 0;
         store.state.state = "playing";
         store.dispatch(action);
-        /* await MusicController.audioPlayer.resume();
-        action['state'] = "playing";
-        store.dispatch(action); */
       }
     }
   };

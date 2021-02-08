@@ -3,15 +3,18 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 12:00:14
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-07 16:22:29
+ * @LastEditTime: 2021-02-08 13:44:27
  */
 import 'package:flutter/material.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
 import 'package:music_learn/src/pages/config/music_controller.dart';
 import 'package:music_learn/src/pages/config/music_playing.dart';
+import 'package:music_learn/src/pages/download_maneger/download_maneger.dart';
 import 'package:music_learn/src/pages/local_music/local_music.dart';
 
 import 'package:music_learn/src/pages/play_list/favorite_list.dart';
+import 'package:music_learn/src/pages/recent/recent.dart';
+import 'package:music_learn/src/utils/favorite_list_utils.dart';
 import 'package:music_learn/src/utils/navigator_utils.dart';
 
 class MinePage extends StatefulWidget {
@@ -28,10 +31,12 @@ class _MinePageState extends State<MinePage> {
     Icons.video_library,
     Icons.cloud_download,
   ];
-
+  List<MusicInfo> mlist = [];
   @override
   Widget build(BuildContext context) {
     // TODO: implement build
+
+    print(mlist.length);
     return Column(
       children: [
         menuItem(
@@ -48,16 +53,18 @@ class _MinePageState extends State<MinePage> {
           icon: iconList[1],
           text: menuList[1],
           onTap: () {
-            MusicController.audioPlayer.play(
-                '/storage/emulated/0/Android/data/com.example.music_learn/filesmusic_learn/四季予你-程响-004bd0Av3rVEE3(qq).mp3',
-                isLocal: true);
+            NavigatorUtils.pushPage(
+                context: context, targPage: RecentListPage());
           },
         ),
         menuItem(
           type: "end",
           icon: iconList[2],
           text: menuList[2],
-          onTap: () {},
+          onTap: () {
+            NavigatorUtils.pushPage(
+                context: context, targPage: DownloadListPage());
+          },
         ),
         Container(
           height: 10,
@@ -70,8 +77,8 @@ class _MinePageState extends State<MinePage> {
           children: <Widget>[
             ListTile(
               title: Text('喜欢的音乐'),
-              subtitle: Text(
-                  FavoriteMusicState.favoriteList.length.toString() + '首音乐'),
+              subtitle:
+                  Text(FavoriteListUtils.musicList.length.toString() + '首音乐'),
               leading: Icon(Icons.favorite),
               onTap: () {
                 /* MusicInfo m = MusicInfo(songMid: 'sM');
