@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 12:00:14
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-08 13:44:27
+ * @LastEditTime: 2021-02-09 09:28:43
  */
 import 'package:flutter/material.dart';
 import 'package:local_cache_sync/local_cache_sync.dart';
@@ -24,7 +24,12 @@ class MinePage extends StatefulWidget {
   }
 }
 
-class _MinePageState extends State<MinePage> {
+class _MinePageState extends State<MinePage>
+    with AutomaticKeepAliveClientMixin {
+  //保持页面切换时的状态
+  @override
+  bool get wantKeepAlive => true;
+
   List<String> menuList = ["本地音乐", "最近播放", "下载管理"];
   List<IconData> iconList = [
     Icons.library_music,
@@ -34,8 +39,8 @@ class _MinePageState extends State<MinePage> {
   List<MusicInfo> mlist = [];
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     // TODO: implement build
-
     print(mlist.length);
     return Column(
       children: [

@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2021-02-05 11:34:22
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-07 10:50:00
+ * @LastEditTime: 2021-02-09 09:32:14
  */
 import 'dart:io';
 import 'package:flutter/foundation.dart';
@@ -41,6 +41,8 @@ class _FrontWidgetState extends State<FrontWidget>
     super.initState();
     _tabController = TabController(length: myTabs.length, vsync: this);
   }
+  
+    super.build(context);
 
   @override
   Widget build(BuildContext context) {

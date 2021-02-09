@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 14:07:57
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-07 09:39:43
+ * @LastEditTime: 2021-02-09 09:29:50
  */
 
 import 'dart:convert';
@@ -26,11 +26,17 @@ class RankListPage extends StatefulWidget {
   }
 }
 
-class _RankListPageState extends State<RankListPage> {
+class _RankListPageState extends State<RankListPage>
+    with AutomaticKeepAliveClientMixin {
+  //保持页面切换时的状态
+  @override
+  bool get wantKeepAlive => true;
+
   List<dynamic> rankList;
   String source = MusicSource.source;
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     double height = 105;
     LogUtils.e(MusicSource.source);
 

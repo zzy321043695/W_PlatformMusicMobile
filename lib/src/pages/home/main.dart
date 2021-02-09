@@ -3,7 +3,7 @@
  * @Author: zhengzhenyu
  * @Date: 2020-12-22 10:34:18
  * @LastEditors: zhengzhenyu
- * @LastEditTime: 2021-02-05 12:18:12
+ * @LastEditTime: 2021-02-09 09:18:40
  */
 
 import 'package:flutter/material.dart';
@@ -26,7 +26,10 @@ class MainPage extends StatefulWidget {
 }
 
 class _MainPageState extends State<MainPage>
-    with SingleTickerProviderStateMixin, TickerProviderStateMixin {
+    with
+        SingleTickerProviderStateMixin,
+        TickerProviderStateMixin,
+        AutomaticKeepAliveClientMixin {
   final List<Tab> myTabs = <Tab>[
     Tab(
       text: "我的",
@@ -37,6 +40,10 @@ class _MainPageState extends State<MainPage>
   ];
 
   TabController _tabController;
+
+  //保持页面切换时的状态
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
@@ -62,6 +69,7 @@ class _MainPageState extends State<MainPage>
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Container(
       color: Colors.white,
     );
